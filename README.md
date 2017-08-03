@@ -13,8 +13,8 @@ All the sample (question or answer) should be on one line.
 
 ## Usage
 
-lein uberjar
-java -jar target/chatbot-0.1.0-SNAPSHOT-standalone.jar
+     lein uberjar
+     java -jar target/chatbot-0.1.0-SNAPSHOT-standalone.jar
 
 ## License
 
