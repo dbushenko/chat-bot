@@ -8,4 +8,5 @@
                  [clojure-opennlp "0.4.0"]
                  [orchestra "2017.07.04-1"]
                  [expound "0.1.2"]]
-  :main chatbot.core)
+  :main chatbot.core
+  :aot :all)

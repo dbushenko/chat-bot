@@ -7,9 +7,6 @@
   (:import opennlp.tools.stemmer.PorterStemmer)
   (:gen-class))
 
-(defn coll-predicate [coll predicate]
-  (and (coll? coll) (every? predicate coll)))
-
 (def tokenize (nlp/make-tokenizer "models/en-token.bin"))
 (def stemmer (PorterStemmer.))
 (def stem (memoize (fn [s] (.stem stemmer s))))
@@ -39,7 +36,7 @@
 
 (s/fdef str->tokens
         :args (s/cat :s string?)
-        :ret #(coll-predicate % string?))
+        :ret (s/coll-of string?))
 
 (defn str->tokens [s]
   (->> s
@@ -51,7 +48,7 @@
 
 (s/fdef prepare-text
         :args (s/cat :txt string?)
-        :ret #(coll-predicate % (fn [t] (instance? QA t)))
+        :ret (s/coll-of #(instance? QA %))
 )
 
 (defn prepare-text [txt]
@@ -63,7 +60,7 @@
 ;;-----------------------
 
 (s/fdef read-texts
-        :ret #(coll-predicate % (fn [t] (instance? QA t))))
+        :ret (s/coll-of #(instance? QA %)))
 
 (defn read-texts []
   (->> "training"
@@ -78,7 +75,7 @@
 
 (s/fdef compute-tf
         :args (s/cat :word string?
-                     :tokens #(coll-predicate % string?))
+                     :tokens (s/coll-of string?))
         :ret number?)
 
 (defn compute-tf [word tokens]
@@ -91,7 +88,7 @@
 
 ;; Computes for one text
 (s/fdef tokens->tfs
-        :args (s/cat :tokens #(coll-predicate % string?))
+        :args (s/cat :tokens (s/coll-of string?))
         :ret map?)
 
 (defn tokens->tfs [tokens]
@@ -122,7 +119,7 @@
 
 ;; Computes for all texts in general
 (s/fdef tokens->idfs
-        :args (s/cat :tokens #(coll-predicate % coll?))
+        :args (s/cat :tokens (s/coll-of coll?))
         :ret map?)
 
 (defn tokens->idfs [tokens-lists]
@@ -148,7 +145,7 @@
 ;;-----------------------
 
 (s/fdef texts->all-words
-        :args (s/cat :texts #(coll-predicate % (fn [t] (instance? QA t))))
+        :args (s/cat :texts (s/coll-of #(instance? QA %)))
         :ret vector?)
 
 (defn texts->all-words [texts]
@@ -161,10 +158,10 @@
 ;;-----------------------
 
 (s/fdef words->vec
-        :args (s/cat :all-words #(coll-predicate % string?)
-                     :words #(coll-predicate % string?)
+        :args (s/cat :all-words (s/coll-of string?)
+                     :words (s/coll-of string?)
                      :idfs-map map?)
-        :ret #(coll-predicate % double?))
+        :ret (s/coll-of double?))
 
 (defn words->vec [all-words words idfs-map]
   (let [tfs-map (tokens->tfs words)]
@@ -182,8 +179,8 @@
 ;;-----------------------
 
 (s/fdef QA->TfIdf
-        :args (s/cat :qas #(coll-predicate % (fn [t] (instance? QA t))))
-        :ret #(coll-predicate % (fn [t] (instance? TfIdf t))))
+        :args (s/cat :qas #(s/coll-of (fn [t] (instance? QA t))))
+        :ret (s/coll-of #(instance? TfIdf %)))
 
 (defn QA->TfIdf [qas]
   (let [idfs (tokens->idfs (map :tokens qas))
@@ -194,8 +191,8 @@
 ;;-----------------------
 
 (s/fdef measure
-        :args (s/cat :vec1 #(coll-predicate % double?)
-                     :vec2 #(coll-predicate % double?))
+        :args (s/cat :vec1 (s/coll-of double?)
+                     :vec2 (s/coll-of double?))
         :ret double?)
 
 (defn measure [vec1 vec2]
@@ -208,8 +205,8 @@
 ;;-----------------------
 
 (s/fdef find-similar
-        :args (s/cat :vc #(coll-predicate % double?)
-                     :tf-idfs #(coll-predicate % (fn [t] (instance? TfIdf t))))
+        :args (s/cat :vc (s/coll-of double?)
+                     :tf-idfs (s/coll-of #(instance? TfIdf %)))
         :ret coll?)
 
 (defn find-similar [vc tf-idfs]
